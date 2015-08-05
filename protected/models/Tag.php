@@ -35,9 +35,28 @@ class Tag extends CActiveRecord
 		);
 	}
 
+
+
+
+
+	public static function string2array($tags)
+	{
+		return preg_split('/\s*,\s*/',trim($tags),-1,PREG_SPLIT_NO_EMPTY);
+	}
+
+	public static function array2string($tags)
+	{
+		return implode(', ',$tags);
+	}
+
+
+
+
+
+
 	/**
 	 * @return array relational rules.
-	 */
+	 *
 	public function relations()
 	{
 		// NOTE: you may need to adjust the relation name and the related
@@ -45,6 +64,35 @@ class Tag extends CActiveRecord
 		return array(
 		);
 	}
+
+	/**
+	 *
+	 *
+	 *
+	 *Изменение метода relations()
+	 * 	Далее укажем в методе relations() связанные с записью объекты. После этого мы сможем использовать реляционную ActiveRecord (RAR) для получения связанных с записью данных, таких как информацию об авторе и комментарии. Сложные SQL запросы с JOIN в этом случае не потребуются.
+	 *Определим метод relations():
+	 *
+	 *
+	 *http://www.yiiframework.ru/doc/blog/ru/post.model
+	 *
+	 *
+	 */
+
+
+	public function relations()
+	{
+		return array(
+			'author' => array(self::BELONGS_TO, 'User', 'author_id'),
+			'comments' => array(self::HAS_MANY, 'Comment', 'post_id',
+				'condition'=>'comments.status='.Comment::STATUS_APPROVED,
+				'order'=>'comments.create_time DESC'),
+			'commentCount' => array(self::STAT, 'Comment', 'post_id',
+				'condition'=>'status='.Comment::STATUS_APPROVED),
+		);
+	}
+
+
 
 	/**
 	 * @return array customized attribute labels (name=>label)

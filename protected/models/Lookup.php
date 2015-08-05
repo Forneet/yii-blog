@@ -101,4 +101,52 @@ class Lookup extends CActiveRecord
 	{
 		return parent::model($className);
 	}
+
+
+
+	/**
+	 *
+	 *Текстовое представление для статуса
+	 * Так как статус записи хранится в БД в виде числа,
+	 * нам необходимо получить его текстовое представление для отображения пользователям.
+	 * Для больших систем такое требование является довольно типичным.
+	 * 	Для хранения связей между целыми числами и их текстовым представлением,
+	 * необходимым другим объектам данных, мы используем таблицу tbl_lookup.
+	 * Для более удобного получения текстовых данных изменим модель Lookup следующим образом:
+	 *
+	 * http://www.yiiframework.ru/doc/blog/ru/post.model
+	 *
+	 */
+
+
+
+	private static $_items=array();
+
+	public static function items($type)
+	{
+		if(!isset(self::$_items[$type]))
+			self::loadItems($type);
+		return self::$_items[$type];
+	}
+
+	public static function item($type,$code)
+	{
+		if(!isset(self::$_items[$type]))
+			self::loadItems($type);
+		return isset(self::$_items[$type][$code]) ? self::$_items[$type][$code] : false;
+	}
+
+	private static function loadItems($type)
+	{
+		self::$_items[$type]=array();
+		$models=self::model()->findAll(array(
+			'condition'=>'type=:type',
+			'params'=>array(':type'=>$type),
+			'order'=>'position',
+		));
+		foreach($models as $model)
+			self::$_items[$type][$model->code]=$model->name;
+	}
 }
+
+

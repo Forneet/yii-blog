@@ -40,6 +40,13 @@ class User extends CActiveRecord
 	 */
 
 
+
+
+
+
+
+
+
 	public function validatePassword($password)
 	{
 		return CPasswordHelper::verifyPassword($password,$this->password);
@@ -49,6 +56,11 @@ class User extends CActiveRecord
 	{
 		return CPasswordHelper::hashPassword($password);
 	}
+
+
+
+
+
 
 
 
@@ -135,3 +147,5 @@ class User extends CActiveRecord
 		return parent::model($className);
 	}
 }
+
+

@@ -27,9 +27,44 @@ class Post extends CActiveRecord
 		return 'tbl_post';
 	}
 
+
+	/**
+	 *Для того, чтобы сделать код более читаемым мы описываем константы,
+	 * соответствующие целочисленным значениям статуса.
+	 * Эти константы необходимо использовать в коде вместо соответствующих им целых значений.
+	 */
+	const STATUS_DRAFT=1;
+	const STATUS_PUBLISHED=2;
+	const STATUS_ARCHIVED=3;
+
+
+
+
+	/**
+	 *Добавляем свойство url
+	 * 	Каждой записи соответствует уникальный URL.
+	 * Вместо повсеместного вызова CWebApplication::createUrl для формирования этого URL,
+	 * мы можем добавить свойство url модели Post и повторно использовать код для генерации URL.
+	 * Позже мы опишем, как получить красивые URL.
+	 * Использование свойства модели позволит реализовать это максимально удобно.
+	 * 	Для того, чтобы добавить свойство url, мы добавляем геттер в класс Post:
+	 */
+	public function getUrl()
+	{
+		return Yii::app()->createUrl('post/view', array(
+			'id'=>$this->id,
+			'title'=>$this->title,
+		));
+	}
+
+
+
+
+
+
 	/**
 	 * @return array validation rules for model attributes.
-	 */
+	 *
 	public function rules()
 	{
 		// NOTE: you should only define rules for those attributes that
@@ -44,6 +79,43 @@ class Post extends CActiveRecord
 			array('id, title, content, tags, status, create_time, update_time, author_id', 'safe', 'on'=>'search'),
 		);
 	}
+*/
+
+
+
+	public function rules()
+	{
+		return array(
+			array('title, content, status', 'required'),
+			array('title', 'length', 'max'=>128),
+			array('status', 'in', 'range'=>array(1,2,3)),
+			array('tags', 'match', 'pattern'=>'/^[\w\s,]+$/',
+				'message'=>'В тегах можно использовать только буквы.'),
+			array('tags', 'normalizeTags'),
+
+			array('title, status', 'safe', 'on'=>'search'),
+		);
+	}
+
+
+
+
+
+	public function normalizeTags($attribute,$params)
+	{
+		$this->tags=Tag::array2string(array_unique(Tag::string2array($this->tags)));
+	}
+
+
+
+
+
+
+
+
+
+
+
 
 	/**
 	 * @return array relational rules.
