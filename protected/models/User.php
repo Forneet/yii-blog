@@ -23,6 +23,35 @@ class User extends CActiveRecord
 		return 'tbl_user';
 	}
 
+
+	/**
+	 *
+	 * Добавляем проверку пользователя на правельность пароля
+	 *
+	 *
+	 * Для того, чтобы проверить, ввёл ли пользователь правильный пароль,
+	 * мы вызываем метод validatePassword класса User.
+	 * Нам необходимо изменить файл /wwwroot/blog/protected/models/User.php как показано ниже.
+	 * Отметим, что вместо хранения пароля в БД в явном виде, мы сохраняем его хеш.
+	 * При проверке введённого пользователем пароля, вместо сравнения паролей, мы должны сравнивать хеши.
+	 * Для хеширования пароля и его проверки мы используем входящий в Yii класс CPasswordHelper.
+	 *
+	 * http://www.yiiframework.ru/doc/blog/ru/prototype.auth
+	 */
+
+
+	public function validatePassword($password)
+	{
+		return CPasswordHelper::verifyPassword($password,$this->password);
+	}
+
+	public function hashPassword($password)
+	{
+		return CPasswordHelper::hashPassword($password);
+	}
+
+
+
 	/**
 	 * @return array validation rules for model attributes.
 	 */
