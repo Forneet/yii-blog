@@ -24,8 +24,28 @@ class PostController extends Controller
 	 * This method is used by the 'accessControl' filter.
 	 * @return array access control rules
 	 */
-	public function accessRules()
-	{
+
+
+
+		public function accessRules()
+		{
+			return array(
+				array('allow',  // позволим всем пользователям выполнять действия 'list' и 'show'
+					'actions'=>array('index', 'view'),
+					'users'=>array('*'),
+				),
+				array('allow', // позволим аутентифицированным пользователям выполнять любые действия
+					'users'=>array('@'),
+				),
+				array('deny',  // остальным запретим всё
+					'users'=>array('*'),
+				),
+			);
+		}
+
+		/*
+		public function accessRules()
+		{
 		return array(
 			array('allow',  // allow all users to perform 'index' and 'view' actions
 				'actions'=>array('index','view'),
@@ -48,13 +68,33 @@ class PostController extends Controller
 	/**
 	 * Displays a particular model.
 	 * @param integer $id the ID of the model to be displayed
-	 */
+
+
+		-------comments old action
+
 	public function actionView($id)
 	{
 		$this->render('view',array(
 			'model'=>$this->loadModel($id),
 		));
 	}
+
+		and add new ---------->
+ */
+
+
+
+	public function actionView()
+	{
+		$post=$this->loadModel();
+		$this->render('view',array(
+			'model'=>$post,
+		));
+	}
+
+
+	private $_model;
+
 
 	/**
 	 * Creates a new model.
@@ -119,7 +159,7 @@ class PostController extends Controller
 
 	/**
 	 * Lists all models.
-	 */
+
 	public function actionIndex()
 	{
 		$dataProvider=new CActiveDataProvider('Post');
@@ -127,6 +167,37 @@ class PostController extends Controller
 			'dataProvider'=>$dataProvider,
 		));
 	}
+	 */
+
+
+
+
+	public function actionIndex()
+	{
+		$criteria=new CDbCriteria(array(
+			'condition'=>'status='.Post::STATUS_PUBLISHED,
+			'order'=>'update_time DESC',
+			'with'=>'commentCount',
+		));
+		if(isset($_GET['tag']))
+			$criteria->addSearchCondition('tags',$_GET['tag']);
+
+		$dataProvider=new CActiveDataProvider('Post', array(
+			'pagination'=>array(
+				'pageSize'=>5,
+			),
+			'criteria'=>$criteria,
+		));
+
+		$this->render('index',array(
+			'dataProvider'=>$dataProvider,
+		));
+	}
+
+
+
+
+
 
 	/**
 	 * Manages all models.
@@ -149,7 +220,13 @@ class PostController extends Controller
 	 * @param integer $id the ID of the model to be loaded
 	 * @return Post the loaded model
 	 * @throws CHttpException
-	 */
+	 *
+	 *
+	 *
+	 *
+	 *
+	 *
+	 *
 	public function loadModel($id)
 	{
 		$model=Post::model()->findByPk($id);
@@ -157,6 +234,34 @@ class PostController extends Controller
 			throw new CHttpException(404,'The requested page does not exist.');
 		return $model;
 	}
+	 *
+	 *
+	 *
+	 *
+	 *
+	*/
+
+
+	public function loadModel()
+	{
+		if($this->_model===null)
+		{
+			if(isset($_GET['id']))
+			{
+				if(Yii::app()->user->isGuest)
+					$condition='status='.Post::STATUS_PUBLISHED
+						.' OR status='.Post::STATUS_ARCHIVED;
+				else
+					$condition='';
+				$this->_model=Post::model()->findByPk($_GET['id'], $condition);
+			}
+			if($this->_model===null)
+				throw new CHttpException(404,'Запрашиваемая страница не существует.');
+		}
+		return $this->_model;
+	}
+
+
 
 	/**
 	 * Performs the AJAX validation.

@@ -22,7 +22,8 @@
 	<br />
 
 	<b><?php echo CHtml::encode($data->getAttributeLabel('status')); ?>:</b>
-	<?php echo CHtml::encode($data->status); ?>
+	<!---?php echo CHtml::encode($data->status); ?--->
+	<?php echo $form->dropDownList($model,'status',Lookup::items('PostStatus')); ?>
 	<br />
 
 	<b><?php echo CHtml::encode($data->getAttributeLabel('create_time')); ?>:</b>

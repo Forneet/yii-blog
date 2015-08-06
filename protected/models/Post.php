@@ -189,4 +189,66 @@ class Post extends CActiveRecord
 	{
 		return parent::model($className);
 	}
+
+
+	/*
+ *
+ * Далее изменим класс Post таким образом,
+ * чтобы он автоматически выставлял некоторые атрибуты
+ * (такие, как create_time и author_id) непосредственно перед сохранением записи в БД.
+ * Перекроем метод beforeSave():
+ *
+ *
+ */
+
+	protected function beforeSave()
+	{
+		if(parent::beforeSave())
+		{
+			if($this->isNewRecord)
+			{
+				$this->create_time=$this->update_time=time();
+				$this->author_id=Yii::app()->user->id;
+			}
+			else
+				$this->update_time=time();
+			return true;
+		}
+		else
+			return false;
+	}
+
+
+
+	/*
+    *При сохранении записи мы хотим также обновить информацию о частоте использования тегов в таблице tbl_tag.
+	 * Мы можем реализовать это в методе afterSave(), который автоматически вызывается после успешного сохранения записи в БД.
+    *
+    */
+
+	protected function afterSave()
+	{
+		parent::afterSave();
+		Tag::model()->updateFrequency($this->_oldTags, $this->tags);
+	}
+
+	private $_oldTags;
+
+
+	/*
+	*
+	 *Так как необходимо определить, менял ли пользователь теги при редактировании записи, нам понадобятся старые теги.
+	 * Для этого мы реализуем метод afterFind(), который записывает старые теги в свойство _oldTags.
+	 * Метод afterFind() вызывается автоматически при заполнении модели AR данными, полученными из БД.
+	 *
+	 *
+	*/
+
+	protected function afterFind()
+	{
+		parent::afterFind();
+		$this->_oldTags=$this->tags;
+	}
+
 }
+
